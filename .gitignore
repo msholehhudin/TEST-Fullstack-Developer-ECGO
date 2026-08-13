@@ -1,6 +1,13 @@
-node_modules/
-dist/
-coverage/
-.env
-.env.*
-!.env.example
+# Dependencies
+**/node_modules/
+
+# Next.js
+D/.next/
+D/out/
+
+# Environment variables
+**/.env*
+
+# AI / Agent instructions
+**/CLAUDE.md
+**/AGENTS.md
