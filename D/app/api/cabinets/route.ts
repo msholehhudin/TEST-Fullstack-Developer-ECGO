@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
-import { getCabinets } from "@/lib/queries/cabinets";
+import getCabinets from "@/lib/queries/cabinets";
+import { GetCabinetsParams } from "@/lib/types/cabinets";
+import { getCabinetsSchema } from "@/lib/validations/cabinet";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const cabinets = await getCabinets();
 
-    return NextResponse.json({
-      data: cabinets,
-    });
+    const params = Object.fromEntries(
+      request.nextUrl.searchParams.entries()
+    )
+
+    const parsed = getCabinetsSchema.parse(params)
+    const result = await getCabinets(parsed)
+
+    return NextResponse.json({result});
   } catch (error) {
     console.error("Failed to fetch cabinets:", error);
 
