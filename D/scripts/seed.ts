@@ -25,8 +25,39 @@ const BRANCH_NAMES = [
 const STATUSES = ["ONLINE", "OFFLINE", "MAINTENANCE"] as const;
 const SLOT_STATES = ["EMPTY", "CHARGING", "FULL", "LOCKED", "FAULT"] as const;
 
+// Bobot per jam (0-23): pagi (6-9) dan sore (16-19) lebih tinggi — jam sibuk.
+const HOUR_WEIGHTS = [
+  1, 1, 1, 1, 1, 2, // 00-05
+  5, 8, 8, 5, 3, 3, // 06-11
+  3, 3, 3, 3, 4, 8, // 12-17
+  8, 6, 4, 3, 2, 1, // 18-23
+];
+
 const randomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+const weightedHour  = (): number => {
+  const total = HOUR_WEIGHTS.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let h = 0; h < 24; h++) {
+    if (r < HOUR_WEIGHTS[h]) return h;
+    r -= HOUR_WEIGHTS[h];
+  }
+  return 12;
+}
+
+const randomTimestampInLast30Days= (): Date => {
+  const daysAgo = randomInt(0, 29);
+  const hour = weightedHour();
+  const d = new Date();
+  d.setDate(d.getDate() - daysAgo);
+  d.setHours(hour, randomInt(0, 59), randomInt(0, 59), 0);
+  return d;
+}
+
+const pick = <T,>(arr: readonly T[]): T => {
+    return arr[randomInt(0, arr.length -1)]
 }
 
 const randomStatus = (): (typeof STATUSES)[number] => {
@@ -52,6 +83,8 @@ const seed = async () => {
         branches
       RESTART IDENTITY CASCADE
     `);
+
+    console.log("Existing data cleared.");
 
     // 1. BRANCHES
     const branchIds: string[] = [];
@@ -148,9 +181,49 @@ const seed = async () => {
 
     console.log(`Created ${slotCount} slots.`);
 
-    
+    // 4. Swap Transactions
 
-    console.log("Existing data cleared.");
+    const BATCH_SIZE = 1000
+    const TOTAL = 20000
+    let inserted = 0
+
+    while(inserted < TOTAL){
+        const batchCount = Math.min(BATCH_SIZE, TOTAL - inserted)
+        const valueClauses: string[] = []
+        const params: unknown[] = []
+        let p = 1
+
+        for(let i =0; i < batchCount; i++){
+            const cabinetId = pick(cabinetIds)
+            const slots = slotIdsByCabinet[cabinetId]
+            const slotId = Math.random() < 0.95 ? pick(slots) : null
+            const swappedAt = randomTimestampInLast30Days()
+            const batterayOutSoc = randomInt(80, 100)
+            const batterayInSoc = randomInt(5,30)
+
+            valueClauses.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++})`)
+            params.push(cabinetId, slotId, swappedAt, batterayOutSoc, batterayInSoc)
+        }
+
+        await client.query(
+            `
+                INSERT INTO swap_transactions (
+                    cabinet_id,
+                    slot_id,
+                    swapped_at,
+                    battery_out_soc,
+                    battery_in_soc
+                )
+                VALUES ${valueClauses.join(", ")}
+            `,
+            params
+        )
+
+        inserted += batchCount
+         console.log(`  ${inserted}/${TOTAL} transactions inserted`);
+    }
+
+    console.log("All data seed successfully inserted.");
 
     await client.query("COMMIT");
   } catch (error) {
