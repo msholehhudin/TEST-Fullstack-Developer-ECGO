@@ -7,7 +7,8 @@ export type CabinetSortBy =
   | "code"
   | "status"
   | "branch"
-  | "heartbeat";
+  | "heartbeat"
+  | "swap24h";
 
 export type SortOrder = "asc" | "desc";
 
@@ -28,4 +29,7 @@ export type Cabinet = {
   created_at: string;
   branch_id: string;
   branch_name: string;
+  swap_count_24h: number;
+  slots_filled: number;
+  slots_total: number;
 };

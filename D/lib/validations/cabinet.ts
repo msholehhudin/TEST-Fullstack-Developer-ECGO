@@ -1,32 +1,36 @@
 import { z } from "zod";
 
 export const getCabinetsSchema = z.object({
-  search: z.string().optional(),
+    search: z.string().optional(),
 
-  status: z
-    .enum(["ALL", "ONLINE", "OFFLINE", "MAINTENANCE"])
-    .default("ALL"),
+    status: z
+        .enum(["ALL", "ONLINE", "OFFLINE", "MAINTENANCE"])
+        .default("ALL"),
 
-  sortBy: z
-    .enum(["code", "status", "branch", "heartbeat"])
-    .default("code"),
+    sortBy: z
+        .enum(["code", "status", "branch", "heartbeat"])
+        .default("code"),
 
-  sortOrder: z
-    .enum(["asc", "desc"])
-    .default("asc"),
+    sortOrder: z
+        .enum(["asc", "desc"])
+        .default("asc"),
 
-  page: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(1),
+    page: z.coerce
+        .number()
+        .int()
+        .positive()
+        .default(1),
 
-  pageSize: z.coerce
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .default(10),
+    pageSize: z.coerce
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .default(10),
+
+    swap_count_24h: z.number(),
+    slots_filled: z.number(),
+    slots_total: z.number(),
 });
 
 export type GetCabinetsInput = z.infer<

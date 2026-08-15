@@ -15,10 +15,10 @@ const getCabinets = async({
     status: "c.status",
     branch: "b.name",
     heartbeat: "c.last_heartbeat_at",
+    swap24h: "swap_count_24"
   }
 
   const offset = (page -1) * pageSize
-
   const conditions: string[] = []
   const values: unknown[] = []
 
@@ -55,6 +55,19 @@ const getCabinets = async({
   const dataValues = [...values, pageSize, offset]
 
   const dataQuery = `
+    WITH swap_24h AS (
+      SELECT cabinet_id, COUNT(*) AS swap_count_24h
+      FROM swap_transactions
+      WHERE swapped_at >= now() - interval '24 hours'
+      GROUP BY cabinet_id
+    ),
+    slot_summary AS (
+      SELECT cabinet_id,
+             COUNT(*) FILTER (WHERE state <> 'EMPTY') AS slots_filled,
+             COUNT(*) AS slots_total
+      FROM slots
+      GROUP BY cabinet_id
+    )
     SELECT
       c.id,
       c.code,
@@ -62,10 +75,17 @@ const getCabinets = async({
       c.last_heartbeat_at,
       c.created_at,
       b.id AS branch_id,
-      b.name AS branch_name
+      b.name AS branch_name,
+      COALESCE(s24.swap_count_24h, 0) AS swap_count_24h,
+      COALESCE(ss.slots_filled, 0) AS slots_filled,
+      COALESCE(ss.slots_total, 0) AS slots_total
     FROM cabinets c
     INNER JOIN branches b
       ON b.id = c.branch_id
+    LEFT JOIN swap_24h s24
+      ON s24.cabinet_id = c.id
+    LEFT JOIN slot_summary ss
+      ON ss.cabinet_id = c.id
     ${whereClause}
     ORDER BY ${sortColumn} ${direction}
     LIMIT $${dataValues.length - 1}
