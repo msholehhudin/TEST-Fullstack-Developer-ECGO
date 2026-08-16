@@ -15,7 +15,7 @@ const getCabinets = async({
     status: "c.status",
     branch: "b.name",
     heartbeat: "c.last_heartbeat_at",
-    swap24h: "swap_count_24"
+    swap24h: "swap_count_24h"
   }
 
   const offset = (page -1) * pageSize

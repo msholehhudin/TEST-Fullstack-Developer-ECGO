@@ -8,7 +8,7 @@ export const getCabinetsSchema = z.object({
         .default("ALL"),
 
     sortBy: z
-        .enum(["code", "status", "branch", "heartbeat"])
+        .enum(["code", "status", "branch", "heartbeat", "swap24h"])
         .default("code"),
 
     sortOrder: z
@@ -28,9 +28,9 @@ export const getCabinetsSchema = z.object({
         .max(100)
         .default(10),
 
-    swap_count_24h: z.number(),
-    slots_filled: z.number(),
-    slots_total: z.number(),
+    // swap_count_24h: z.number(),
+    // slots_filled: z.number(),
+    // slots_total: z.number(),
 });
 
 export type GetCabinetsInput = z.infer<
