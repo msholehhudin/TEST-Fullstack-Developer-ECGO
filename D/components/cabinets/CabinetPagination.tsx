@@ -7,9 +7,11 @@ import type { CabinetsPagination } from "@/lib/api/cabinets";
 export function CabinetPagination({
   pagination,
   onPageChange,
+  disabled = false,
 }: {
   pagination: CabinetsPagination;
   onPageChange: (page: number) => void;
+  disabled?: boolean;
 }) {
   const { page, pageSize, total, totalPages } = pagination;
 
@@ -20,7 +22,11 @@ export function CabinetPagination({
 
   // Keep the page list short: current page ±2, always show first/last.
   const pages = new Set<number>();
-  for (let p = Math.max(1, page - 2); p <= Math.min(totalPages, page + 2); p++) {
+  for (
+    let p = Math.max(1, page - 2);
+    p <= Math.min(totalPages, page + 2);
+    p++
+  ) {
     pages.add(p);
   }
   pages.add(1);
@@ -40,6 +46,7 @@ export function CabinetPagination({
           disabled={page <= 1}
           onClick={() => onPageChange(page - 1)}
           aria-label="Previous page"
+          className="hover: cursor-pointer"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -55,8 +62,10 @@ export function CabinetPagination({
               <Button
                 variant={p === page ? "default" : "outline"}
                 size="icon"
+                disabled={disabled}
                 onClick={() => onPageChange(p)}
                 aria-current={p === page ? "page" : undefined}
+                className="hover:cursor-pointer "
               >
                 {p}
               </Button>
@@ -67,9 +76,10 @@ export function CabinetPagination({
         <Button
           variant="outline"
           size="icon"
-          disabled={page >= totalPages}
+          disabled={disabled || page >= totalPages}
           onClick={() => onPageChange(page + 1)}
           aria-label="Next page"
+          className="hover: cursor-pointer"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

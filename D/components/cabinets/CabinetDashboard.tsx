@@ -20,6 +20,7 @@ import type {
   CabinetStatus,
   GetCabinetsParams,
 } from "@/lib/types/cabinets";
+import { CabinetLoadingBar } from "./CabinetLoadingBar";
 
 const PAGE_SIZE = 10;
 
@@ -87,6 +88,7 @@ export function CabinetDashboard() {
 
   const cabinets = data?.data ?? [];
   const pagination = data?.pagination;
+  const isRefetching = status === "loading" && data !== undefined;
 
   return (
     <div className="flex w-full flex-col gap-6 px-6 py-8 lg:px-10">
@@ -111,32 +113,46 @@ export function CabinetDashboard() {
             status={params.status as CabinetStatus | "ALL"}
             onSearchChange={(value) => updateParams({ search: value })}
             onStatusChange={(value) => updateParams({ status: value })}
+            disabled={isRefetching}
           />
         </div>
 
         <Separator />
 
-        {status === "loading" && !data ? (
-          <CabinetTableSkeleton />
-        ) : status === "error" ? (
-          <CabinetErrorState onRetry={retry} />
-        ) : cabinets.length === 0 ? (
-          <CabinetEmptyState />
-        ) : (
-          <CabinetTable
-            cabinets={cabinets}
-            sortBy={params.sortBy}
-            sortOrder={params.sortOrder ?? "asc"}
-            onSort={handleSort}
-          />
-        )}
+        <div className="relative">
+          {isRefetching && <CabinetLoadingBar />}
 
-        {pagination && cabinets.length > 0 && (
-          <CabinetPagination
-            pagination={pagination}
-            onPageChange={(page) => updateParams({ page }, false)}
-          />
-        )}
+          <div
+            className={
+              isRefetching
+                ? "pointer-events-none opacity-50 transition-opacity duration-200"
+                : "transition-opacity duration-200"
+            }
+          >
+            {status === "loading" && !data ? (
+              <CabinetTableSkeleton />
+            ) : status === "error" ? (
+              <CabinetErrorState onRetry={retry} />
+            ) : cabinets.length === 0 ? (
+              <CabinetEmptyState />
+            ) : (
+              <CabinetTable
+                cabinets={cabinets}
+                sortBy={params.sortBy}
+                sortOrder={params.sortOrder ?? "asc"}
+                onSort={handleSort}
+              />
+            )}
+
+            {pagination && cabinets.length > 0 && (
+              <CabinetPagination
+                pagination={pagination}
+                onPageChange={(page) => updateParams({ page }, false)}
+                disabled={isRefetching}
+              />
+            )}
+          </div>
+        </div>
       </Card>
     </div>
   );

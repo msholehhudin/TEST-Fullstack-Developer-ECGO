@@ -18,11 +18,13 @@ export function CabinetFilters({
   status,
   onSearchChange,
   onStatusChange,
+  disabled = false,
 }: {
   search: string;
   status: CabinetStatus | "ALL";
   onSearchChange: (value: string) => void;
   onStatusChange: (value: CabinetStatus | "ALL") => void;
+  disabled?: boolean;
 }) {
   // Local, debounced copy so every keystroke doesn't trigger a fetch/URL push.
   const [localSearch, setLocalSearch] = useState(search);
@@ -49,14 +51,18 @@ export function CabinetFilters({
           placeholder="Search cabinet or branch..."
           className="pl-8"
           aria-label="Search cabinet or branch"
+          disabled={disabled}
         />
       </div>
 
       <Select
         value={status}
-        onChange={(e) => onStatusChange(e.target.value as CabinetStatus | "ALL")}
+        onChange={(e) =>
+          onStatusChange(e.target.value as CabinetStatus | "ALL")
+        }
         aria-label="Filter by status"
-        className="sm:w-40"
+        className="sm:w-40 hover:cursor-pointer"
+        disabled={disabled}
       >
         {STATUS_OPTIONS.map((option) => (
           <option key={option.value} value={option.value}>
