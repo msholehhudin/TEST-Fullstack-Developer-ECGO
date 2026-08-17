@@ -13,6 +13,7 @@ import { CabinetSlotProgress } from "@/components/cabinets/CabinetSlotProgress";
 import { CabinetHeartbeat } from "@/components/cabinets/CabinetHeartbeat";
 import { CabinetSortableHead } from "@/components/cabinets/CabinetSortableHead";
 import type { Cabinet, CabinetSortBy, SortOrder } from "@/lib/types/cabinets";
+import Link from "next/link";
 
 export function CabinetTable({
   cabinets,
@@ -71,7 +72,12 @@ export function CabinetTable({
         {cabinets.map((cabinet) => (
           <TableRow key={cabinet.id}>
             <TableCell className="font-medium text-neutral-900">
-              {cabinet.code}
+              <Link
+                href={`/cabinets/${cabinet.id}`}
+                className="hover:underline"
+              >
+                {cabinet.code}
+              </Link>
             </TableCell>
             <TableCell>{cabinet.branch_name}</TableCell>
             <TableCell>
