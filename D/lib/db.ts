@@ -8,8 +8,7 @@ export const pool =
   globalForDb.pool ??
   new Pool({
     connectionString: process.env.DATABASE_URL,
+    max: 1,
   });
 
-if (process.env.NODE_ENV !== "production") {
   globalForDb.pool = pool;
-}
