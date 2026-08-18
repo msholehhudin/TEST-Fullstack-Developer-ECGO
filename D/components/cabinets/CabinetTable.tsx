@@ -28,6 +28,7 @@ export function CabinetTable({
   sortOrder: SortOrder;
   onSort: (column: CabinetSortBy) => void;
 }) {
+  const router = useRouter();
   return (
     <Table>
       <TableHeader>
@@ -72,7 +73,6 @@ export function CabinetTable({
       </TableHeader>
       <TableBody>
         {cabinets.map((cabinet) => {
-          const router = useRouter();
           const href = `/cabinets/${cabinet.id}`;
 
           return (
